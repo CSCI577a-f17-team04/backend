@@ -4,6 +4,7 @@ var url = "mongodb://localhost:27017/spotlite";
 
 var app, express;
 
+//establish a server
 express = require("express");
 
 app = express();
@@ -12,9 +13,10 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 
-//reponse after receiving the request from front end via "/insertElement".
+findItem("aiodjoijd");
+
+//save one user".
 app.post("/insertElement", function (request, response) {
-    console.log(request.body);
     MongoClient.connect(url, function(err,db) {
         if (err) throw err;
         var myobj = {email : request.body.email, name: request.body.name, phone : request.body.phone};
@@ -26,6 +28,22 @@ app.post("/insertElement", function (request, response) {
     });
     response.send("saved");
 });
+
+//The front end want to get a user information".
+app.post("/getUser", function (request, response) {
+    MongoClient.connect(url, function(err,db) {
+        if (err) throw err;
+        var myobj = {name : request.body.name};
+        db.collection("users").findOne(myobj, function(err, result) {
+            if (err) throw err;
+            console.log(result);
+            console.log("get one user");
+            db.close();
+            response.send(result);
+        });
+    });
+});
+
 
 app.listen(8888);
 
@@ -61,7 +79,9 @@ function findItem(username){
       if (err) throw err;
       db.collection("users").findOne({username : username}, function(err, result) {
         if (err) throw err;
-        console.log(result);
+        if(result == null){
+            console.log("this is null");
+        }
         db.close();
       });
     });
