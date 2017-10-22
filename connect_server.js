@@ -25,7 +25,7 @@ app.post("/insertUser", function (request, response) {
 app.post("/getChallengers", function (request, response) {
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        db.collection("Challenger").find({challengee : request.body.username}).toArray(function(err, result) {
+        db.collection("Challenger").find({challengee : request.body.username}, {isMatched : true}).toArray(function(err, result) {
             if (err) throw err;
             if(result == null){
                 console.log("this is null");
@@ -109,6 +109,34 @@ app.post("/isApproved", function (request, response) {
             if (err) throw err;
             db.close();
             response.send(result);
+        });
+    });
+});
+
+//8. Submit challenge idea
+app.post("/submitChallenge", function (request, response) {
+    MongoClient.connect(url, function(err,db) {
+        if (err) throw err;
+        var myobj = {date: response.body.date, description: request.body.description, challengeName: request.body.challengeName, img: request.body.img};
+        db.collection("Posts").insertOne(myobj, function(err,res) {
+            if (err) throw err;
+            console.log("Insert 1 element correctly");
+            db.close();
+            return "stored";
+        });
+    });
+});
+
+//9. add post
+app.post("/insertUser", function (request, response) {
+    MongoClient.connect(url, function(err,db) {
+        if (err) throw err;
+        var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: true};
+        db.collection("Posts").insertOne(myobj, function(err,res) {
+            if (err) throw err;
+            console.log("Insert 1 element correctly");
+            db.close();
+            return "stored";
         });
     });
 });
