@@ -22,34 +22,62 @@ app.post("/insertUser", function (request, response) {
 });
 
 //2. The front end want to get a user information.
-app.post("/getChallengers", function (request, response) {
+app.post("/competitorCandidates", function (request, response) {
+
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        db.collection("Challenger").find({challengee : request.body.username}, {isMatched : true}).toArray(function(err, result) {
+        db.collection("Challenger").find({challengee : "test2", isMatched : false}).toArray(function(err, result) {
+            console.log("shiji hello");
             if (err) throw err;
             if(result == null){
                 console.log("this is null");
             }
             else{
                 console.log("find and fetch some items...");
+                var arrayName = [];
+                for (var i = 0; i < result.length; i++){
+                    arrayName[i] = result[i].username;
+                }
+                // response.send(arrayName);
+                var myobj = {username :{$in: arrayName}};
+                db.collection("users").find(myobj).toArray(function(err1, result1) {
+                    if (err) throw err;
+
+                    console.log("get users");
+                    response.send(result1);
+                });
+                // console.log(result);
             }
             db.close();
-            response.send(result);
         });
     });
 });
 
-//3. The front end want to get a user information.
+//3. Check whether the competitor selected by the user is matched or not.
+/*
+If not, return an empty array,
+If yes, return an array of candidates.
+ */
 app.post("/getCompetitor", function (request, response) {
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        db.collection("Challenger").findOne({challengee : request.body.username, isMatched: true}, function(err, result) {
+        db.collection("Challenger").findOne({username: request.body.challenger, challengee : request.body.challengee, isMatched: true}, function(err, result) {
+            // console.log(request.body.username);
             if (err) throw err;
             if(result == null){
-                console.log("this is null");
+                response.send(result);
             }
             else{
-                console.log("find and fetch some items...");
+                db.collection("Challenger").find({challengee : request.body.challengee, isMatched : false}).toArray(function(err1, result1) {
+                    if (err1) throw err1;
+                    if(result == null){
+                        console.log("this is null");
+                    }
+                    else{
+                        console.log("find and fetch some items...");
+                    }
+                    response.send(result1);
+                });
             }
             db.close();
             response.send(result);
