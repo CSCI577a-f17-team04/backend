@@ -26,11 +26,12 @@ app.post("/competitorCandidates", function (request, response) {
 
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        db.collection("Challenger").find({challengee : "test2", isMatched : false}).toArray(function(err, result) {
-            console.log("shiji hello");
+        db.collection("Challenger").find({challengee : request.body.challengee, date : request.body.date, isMatched : false}).toArray(function(err, result) {
+            // console.log("shiji hello");
             if (err) throw err;
-            if(result == null){
+            if(result.length == 0){
                 console.log("this is null");
+                response.send(result);
             }
             else{
                 console.log("find and fetch some items...");
@@ -41,14 +42,12 @@ app.post("/competitorCandidates", function (request, response) {
                 // response.send(arrayName);
                 var myobj = {username :{$in: arrayName}};
                 db.collection("users").find(myobj).toArray(function(err1, result1) {
-                    if (err) throw err;
+                    if (err1) throw err1;
+                    db.close();
 
-                    console.log("get users");
                     response.send(result1);
                 });
-                // console.log(result);
             }
-            db.close();
         });
     });
 });
@@ -61,26 +60,61 @@ If yes, return an array of candidates.
 app.post("/getCompetitor", function (request, response) {
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        db.collection("Challenger").findOne({username: request.body.challenger, challengee : request.body.challengee, isMatched: true}, function(err, result) {
+        db.collection("Challenger").findOne({username : "test1", date : "10-20-2017", isMatched : true}, function(err, result) {
             // console.log(request.body.username);
             if (err) throw err;
             if(result == null){
-                response.send(result);
+                response.send(["true"]);
             }
             else{
-                db.collection("Challenger").find({challengee : request.body.challengee, isMatched : false}).toArray(function(err1, result1) {
+                //The candidate cannot be either a challenger or challengee in any row.
+                db.collection("Challenger").find({challengee : "test2", date: "10-20-2017", isMatched : false}).toArray(function(err1, result1) {
                     if (err1) throw err1;
-                    if(result == null){
+
+                    var candidates = [];
+                    var count = 0;
+
+                    var process = function (userName) {
+                        db.collection("Challenger").findOne({$or: [{challengee: userName, isMatched: true, date: "10-20-2017"}, {username: userName, isMatched: true, date: "10-20-2017"}]}, function(err2, result2) {
+
+                            if (err2) throw err2;
+
+                            if(result2 == null){
+
+                                db.collection("users").findOne({username: userName}, function(err3, result3) {
+                                    if (err3) throw err3;
+                                    count += 1;
+                                    candidates.push(result3);
+
+                                    if (count == arrayLength){
+                                        response.send(candidates);
+                                    }
+                                });
+                            }
+                            else
+                                arrayLength -= 1;
+
+
+                        });
+                    }
+
+                    if(result1.length == 0){
                         console.log("this is null");
+                        db.close();
                     }
                     else{
+                        var arrayLength = result1.length;
                         console.log("find and fetch some items...");
+                        for (var i = 0; i < result1.length; i++){
+                            //call a call back nested function
+                            var userName = result1[i].username;
+                            process(userName);
+                        }
+
+                        // db.close();
                     }
-                    response.send(result1);
                 });
             }
-            db.close();
-            response.send(result);
         });
     });
 });
@@ -89,7 +123,7 @@ app.post("/getCompetitor", function (request, response) {
 app.post("/getUser", function (request, response) {
     MongoClient.connect(url, function(err,db) {
         if (err) throw err;
-        var myobj = {username : request.body.username};
+        var myobj = {username : "test1"};
         db.collection("users").findOne(myobj, function(err, result) {
             if (err) throw err;
             console.log(result);
@@ -103,11 +137,13 @@ app.post("/getUser", function (request, response) {
 //5. get daily challenge.
 app.post("/getChallenge", function (request, response) {
     MongoClient.connect(url, function(err,db) {
+        console.log("Welcome Lin");
         if (err) throw err;
         var myobj = {date : request.body.date};
+        console.log("Welcome Lin");
         db.collection("Challenge").findOne(myobj, function(err, result) {
             if (err) throw err;
-
+            console.log(result);
             db.close();
             response.send(result);
         });
@@ -115,7 +151,7 @@ app.post("/getChallenge", function (request, response) {
 });
 
 //6. get upcoming challenges.
-app.post("/getChallenge", function (request, response) {
+app.post("/getUpcomingChallenges", function (request, response) {
     MongoClient.connect(url, function(err,db) {
         if (err) throw err;
         var myobj = {date: {$in: ["10-20-2017", "10-21-2017", "10-22-2017", "10-23-2017"]}};
@@ -129,7 +165,7 @@ app.post("/getChallenge", function (request, response) {
 });
 
 //7. Check whether this user is approved for today's challenge
-app.post("/isApproved", function (request, response) {
+app.post("/approved", function (request, response) {
     MongoClient.connect(url, function(err,db) {
         if (err) throw err;
         var myobj = {date: response.body.date, username: request.body.username};
@@ -156,16 +192,35 @@ app.post("/submitChallenge", function (request, response) {
 });
 
 //9. add post
-app.post("/insertUser", function (request, response) {
+app.post("/addPost", function (request, response) {
     MongoClient.connect(url, function(err,db) {
         if (err) throw err;
-        var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: true};
+        var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: request.body.isChallenge};
         db.collection("Posts").insertOne(myobj, function(err,res) {
             if (err) throw err;
             console.log("Insert 1 element correctly");
             db.close();
             return "stored";
         });
+    });
+});
+
+//1o. Interact with phone numbers that a user have challenged already.
+app.get("/challengedPhone", function (request, response) {
+    console.log("insert challengedPhone");
+    MongoClient.connect(url, function(err,db) {
+        if (err) throw err;
+        var phones = ["123123", "456456", '789789', '000000'];
+        for (var i = 0; i < phones.length; i++){
+            var myobj = {username : "test2", phone: phones[i], date: "10-20-2010"};
+            db.collection("ChallengedPhone").insertOne(myobj, function(err,res) {
+                if (err) throw err;
+                console.log("Insert 1 element correctly");
+                db.close();
+                console.log("stored");
+            });
+        }
+        response.send("succeed");
     });
 });
 
