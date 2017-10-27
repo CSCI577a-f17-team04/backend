@@ -60,7 +60,7 @@ If yes, return an array of candidates.
 app.post("/getCompetitor", function (request, response) {
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        db.collection("Challenger").findOne({username : "test1", date : "10-20-2017", isMatched : true}, function(err, result) {
+        db.collection("Challenger").findOne({username : request.body.challenger, date : "10-20-2017", isMatched : true}, function(err, result) {
             // console.log(request.body.username);
             if (err) throw err;
             if(result == null){
@@ -178,11 +178,12 @@ app.post("/approved", function (request, response) {
 });
 
 //8. Submit challenge idea
-app.post("/submitChallenge", function (request, response) {
+app.post("/submitIdea", function (request, response) {
+    console.log("Submit suggestion");
     MongoClient.connect(url, function(err,db) {
         if (err) throw err;
-        var myobj = {date: response.body.date, description: request.body.description, challengeName: request.body.challengeName, img: request.body.img};
-        db.collection("Posts").insertOne(myobj, function(err,res) {
+        var myobj = {date: request.body.date, description: request.body.description, challengeName: request.body.challengeName, img: request.body.img};
+        db.collection("Suggestions").insertOne(myobj, function(err,res) {
             if (err) throw err;
             console.log("Insert 1 element correctly");
             db.close();
