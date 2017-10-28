@@ -179,6 +179,41 @@ app.post("/approved", function (request, response) {
   })
 });
 
+//8. Submit challenge idea
+app.get("/submitIdea", function (request, response) {
+  console.log("Submit a suggestion");
+  var myobj = {date: request.body.date, description: request.body.description, challengeName: request.body.challengeName, img: request.body.img};
+  con.query("INSERT INTO Suggestions SET ?", myobj, function (err, result, field) {
+    if (err) throw err;
+    console.log("Insert 1 element correctly");
+    response.send(["true"]);
+  });
+});
+
+//9. add post
+app.post("/addPost", function (request, response) {
+  var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: request.body.isChallenge};
+  con.query("Insert Into Posts SET ?", myobj, function (err, result, field) {
+    if (err) throw err;
+    console.log("post successfully");
+    response.send(["true"]);
+  })
+});
+
+//1o. Use a table to store all the phone numbers that a given user challenged today.
+app.get("/challengedPhone", function (request, response) {
+  console.log("insert challengedPhone");
+  var phones = ["123123", "456456", '789789', '000000'];
+  for (var i = 0; i < phones.length; i++){
+    var myobj = {username : "test2", phone: phones[i], date: "10-20-2010"};
+    con.query("INSERT INTO ChallengedPhone SET ?", myobj, function(err, res, field) {
+      if (err) throw err;
+      console.log("Insert 1 element correctly");
+      console.log("stored");
+    });
+  }
+  response.send(["true"]);
+});
 
 
 //create a table
