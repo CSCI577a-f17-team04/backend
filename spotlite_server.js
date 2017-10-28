@@ -215,6 +215,15 @@ app.get("/challengedPhone", function (request, response) {
   response.send(["true"]);
 });
 
+//11. Check whether the user is matched or not before rendering the challenge screen
+app.post("/isMatched", function (request, response) {
+    console.log("Judge the given user status");
+    con.query("SELECT * FROM Challenger WHERE (Challengee = ? OR Challenger = ?) AND isMatched = true", [request.body.username, request.body.username], function (error, result, field) {
+      if (error) throw error;
+      console.log(result.length == 0);
+      response.send(result);
+    })
+})
 
 //create a table
 function createTable(){
