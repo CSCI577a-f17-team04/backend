@@ -13,13 +13,11 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 
-// findItem("aiodjoijd");
-
 //1. save one user.
-app.post("/insertUser", function (request, response) {
-    var result = insertItem(request.body.username, request.body.password, request.body.nickname, request.body.email, request.body.phone, request.body.score);
-    response.send(result);
-});
+// app.post("/insertUser", function (request, response) {
+//     var result = insertItem(request.body.username, request.body.password, request.body.nickname, request.body.email, request.body.phone, request.body.score);
+//     response.send(result);
+// });
 
 //2. The front end want to get a user information.
 app.post("/competitorCandidates", function (request, response) {
@@ -110,8 +108,6 @@ app.post("/getCompetitor", function (request, response) {
                             var userName = result1[i].username;
                             process(userName);
                         }
-
-                        // db.close();
                     }
                 });
             }
