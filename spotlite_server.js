@@ -78,11 +78,18 @@ app.post("/competitorCandidates", function (request, response) {
 If the picked person has matched with others, we will forbid this match process and renturn an updated competitor candidate list.
 */
 app.post("/getCompetitor", function (request, response) {
-  con.query("SELECT * FROM Challenger WHERE challenger = ? AND date = ? AND isMatched = true", [request.body.challenger, request.body.date], function (err, result, fields) {
-    // console.log(request.body.username);
+  console.log(request.body);
+  con.query("SELECT * FROM Challenger WHERE (challenger = ? OR challengee = ?) AND date = ? AND isMatched = true", [request.body.challenger, request.body.challenger, request.body.date], function (err, result, fields) {
+
     if (err) throw err;
-    if(result == null){
+    if(result.length == 0){
       response.send(["true"]);
+      // con.query("SELECT * FROM Users WHERE username = ?", [request.body.challenger], function (err,result,field) {
+      //   if (err) throw err;
+      //   else{
+      //     response.send(result);
+      //   }
+      // });
     }
     else{
       //The candidate cannot be either a challenger or challengee in any row.
@@ -99,10 +106,8 @@ app.post("/getCompetitor", function (request, response) {
             if(result2.length == 0){
 
               con.query("SELECT * FROM Users WhERE username = ?", [userName], function (err3, result3) {
-                console.log(userName)
                 if (err3) throw err3;
                 count += 1;
-                console.log(result3)
                 candidates.push(result3[0]);
                 if (count == arrayLength){
                   response.send(candidates);
@@ -135,7 +140,7 @@ app.post("/getCompetitor", function (request, response) {
 
 //4. The front end want to get a user information.
 app.post("/getUser", function (request, response) {
-  con.query("SELECT * FROM users WHERE username = '" + request.body.username + "'", function (err, result, fields) {
+  con.query("SELECT * FROM users WHERE username = '" + "test1" + "'", function (err, result, fields) {
     if (err) throw err;
     console.log(result);
     console.log("get one user");
@@ -147,15 +152,14 @@ app.post("/getUser", function (request, response) {
 app.post("/getChallenge", function (request, response) {
   con.query("SELECT * FROM Challenge WHERE date = ?", request.body.date, function (err, result, fields) {
     if (err) throw err;
-    console.log(result);
     response.send(result[0]);
   });
 });
 
 //6. get upcoming challenges.
-app.get("/getUpcomingChallenges", function (request, response) {
+app.post("/getUpcomingChallenges", function (request, response) {
   console.log("get upcoming challenges")
-  var dates = ["10-21-2017", "10-22-2017", "10-23-2017", "10-24-2017", "10-25-2017"];
+  var dates = ["10-21-2017", "10-22-2017", "10-23-2017", "10-24-2017"];
 
   //build the query
   var query = "SELECT * FROM Challenge WHERE (date = \'\'";
@@ -166,12 +170,14 @@ app.get("/getUpcomingChallenges", function (request, response) {
 
   con.query(query, function (err, result, fields) {
     if (err) throw err;
+    console.log(result);
     response.send(result);
   });
 });
 
 //7. Check whether this user is approved for today's challenge
 app.post("/approved", function (request, response) {
+  console.log("check approve");
   var myobj = {date: response.body.date, username: request.body.username};
   con.query("SELECT * FROM Approved WHERE date = ? AND username = ?", [request.body.date, request.body.username], function (err, result, field) {
     if (err) throw err;
@@ -180,7 +186,7 @@ app.post("/approved", function (request, response) {
 });
 
 //8. Submit challenge idea
-app.get("/submitIdea", function (request, response) {
+app.post("/submitIdea", function (request, response) {
   console.log("Submit a suggestion");
   var myobj = {date: request.body.date, description: request.body.description, challengeName: request.body.challengeName, img: request.body.img};
   con.query("INSERT INTO Suggestions SET ?", myobj, function (err, result, field) {
@@ -192,7 +198,8 @@ app.get("/submitIdea", function (request, response) {
 
 //9. add post
 app.post("/addPost", function (request, response) {
-  var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: request.body.isChallenge};
+  console.log("add post");
+  var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: request.body.isChallenge, time : request.body.time};
   con.query("Insert Into Posts SET ?", myobj, function (err, result, field) {
     if (err) throw err;
     console.log("post successfully");
@@ -201,11 +208,11 @@ app.post("/addPost", function (request, response) {
 });
 
 //1o. Use a table to store all the phone numbers that a given user challenged today.
-app.get("/challengedPhone", function (request, response) {
+app.post("/challengedPhone", function (request, response) {
   console.log("insert challengedPhone");
-  var phones = ["123123", "456456", '789789', '000000'];
+  var phones = request.body.phones;
   for (var i = 0; i < phones.length; i++){
-    var myobj = {username : "test2", phone: phones[i], date: "10-20-2010"};
+    var myobj = {username : request.body.username, phone: phones[i], date: request.body.date};
     con.query("INSERT INTO ChallengedPhone SET ?", myobj, function(err, res, field) {
       if (err) throw err;
       console.log("Insert 1 element correctly");
@@ -218,11 +225,58 @@ app.get("/challengedPhone", function (request, response) {
 //11. Check whether the user is matched or not before rendering the challenge screen
 app.post("/isMatched", function (request, response) {
     console.log("Judge the given user status");
-    con.query("SELECT * FROM Challenger WHERE (Challengee = ? OR Challenger = ?) AND isMatched = true", [request.body.username, request.body.username], function (error, result, field) {
+    con.query("SELECT * FROM Challenger WHERE (Challengee = ? OR Challenger = ?) AND isMatched = true", ["test1", "test1"], function (error, result, field) {
       if (error) throw error;
-      console.log(result.length == 0);
-      response.send(result);
-    })
+
+      if (result.length == 0)
+        response.send(result);
+
+      var peers = [];
+      var temp = result[0];
+      con.query("SELECT * FROM Users WHERE (username = ? OR username = ?)", [temp.challengee, temp.challenger], function (errorDash, resultDash, fieldDash) {
+        if (errorDash) throw errorDash;
+
+        response.send(resultDash);
+      });
+    });
+});
+
+//12. Get the challenged-related image/video that the given user sent
+app.post("/getImage", function (request, response) {
+  console.log("Get the user's post");
+  con.query("SELECT * FROM Posts WHERE username = ? AND date = ? AND isChallenge = true", [request.body.username, request.body.date], function (error, result, field) {
+
+    if (error) throw error;
+
+    response.send(result);
+
+  });
+})
+
+//13. Get the challenged-related image/video that the given user sent
+app.post("/verify", function (request, response) {
+  console.log("Verify the user's post ");
+  var myObj = {username : request.body.username, date : request.body.date, isApproved : request.body.isApproved};
+  con.query("INSERT INTO Approved SET ?", myObj, function (error, result, field) {
+    if (error) throw error;
+
+    response.send(result);
+
+  });
+})
+
+//14. Get the number of phone numbers the given user has challenged
+app.post("/inviteNumber", function (request, response) {
+  console.log("Get the No. of phone No.s the user challenged");
+  var username = request.body.username;
+  var date = request.body.date;
+  con.query("SELECT * FROM ChallengedPhone WHERE username = ? AND date = ?", [username, date], function (error, result, field) {
+
+    if (error) throw error;
+
+    response.send([result.length]);
+
+  });
 })
 
 //create a table
