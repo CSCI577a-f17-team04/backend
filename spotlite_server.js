@@ -83,13 +83,21 @@ app.post("/getCompetitor", function (request, response) {
 
     if (err) throw err;
     if(result.length == 0){
-      response.send(["true"]);
-      // con.query("SELECT * FROM Users WHERE username = ?", [request.body.challenger], function (err,result,field) {
-      //   if (err) throw err;
-      //   else{
-      //     response.send(result);
-      //   }
-      // });
+      // response.send(["true"]);
+      con.query("SELECT * FROM Users WHERE username = ?", [request.body.challenger], function (err,result,field) {
+        if (err) throw err;
+        else{
+          response.send(result);
+        }
+      });
+
+
+      con.query("UPDATE Challenger SET isMatched = true WHERE challenger = ? AND challengee = ? AND date = ?", [request.body.challenger, request.body.challengee, request.body.date], function(err, result, fileds){
+        if (err) throw err
+        else{
+          console.log("updated");
+        }
+      });
     }
     else{
       //The candidate cannot be either a challenger or challengee in any row.
@@ -142,7 +150,6 @@ app.post("/getCompetitor", function (request, response) {
 app.post("/getUser", function (request, response) {
   con.query("SELECT * FROM users WHERE username = '" + "test1" + "'", function (err, result, fields) {
     if (err) throw err;
-    console.log(result);
     console.log("get one user");
     response.send(result);
   });
@@ -199,10 +206,9 @@ app.post("/submitIdea", function (request, response) {
 //9. add post
 app.post("/addPost", function (request, response) {
   console.log("add post");
-  var myobj = {username : request.body.username, post: request.body.image, date: request.body.date, isChallenge: request.body.isChallenge, time : request.body.time};
+  var myobj = {username : request.body.username, img: request.body.img, date: request.body.date, isChallenge: request.body.isChallenge, time : request.body.time};
   con.query("Insert Into Posts SET ?", myobj, function (err, result, field) {
     if (err) throw err;
-    console.log("post successfully");
     response.send(["true"]);
   })
 });
@@ -216,7 +222,6 @@ app.post("/challengedPhone", function (request, response) {
     con.query("INSERT INTO ChallengedPhone SET ?", myobj, function(err, res, field) {
       if (err) throw err;
       console.log("Insert 1 element correctly");
-      console.log("stored");
     });
   }
   response.send(["true"]);
@@ -225,19 +230,21 @@ app.post("/challengedPhone", function (request, response) {
 //11. Check whether the user is matched or not before rendering the challenge screen
 app.post("/isMatched", function (request, response) {
     console.log("Judge the given user status");
-    con.query("SELECT * FROM Challenger WHERE (Challengee = ? OR Challenger = ?) AND isMatched = true", ["test1", "test1"], function (error, result, field) {
+    con.query("SELECT * FROM Challenger WHERE (Challengee = ? OR Challenger = ?) AND isMatched = true AND date = ?", [request.body.username, request.body.username, request.body.date], function (error, result, field) {
       if (error) throw error;
 
       if (result.length == 0)
         response.send(result);
+      else{
 
-      var peers = [];
-      var temp = result[0];
-      con.query("SELECT * FROM Users WHERE (username = ? OR username = ?)", [temp.challengee, temp.challenger], function (errorDash, resultDash, fieldDash) {
-        if (errorDash) throw errorDash;
-
-        response.send(resultDash);
-      });
+        var peers = [];
+        var temp = result[0];
+        con.query("SELECT * FROM Users WHERE (username = ? OR username = ?)", [temp.challengee, temp.challenger], function (errorDash, resultDash, fieldDash) {
+          if (errorDash) throw errorDash;
+          // console.log( " The matched result is " + resultDash);
+          response.send(resultDash);
+        });
+      }
     });
 });
 
