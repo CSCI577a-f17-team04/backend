@@ -286,6 +286,17 @@ app.post("/inviteNumber", function (request, response) {
   });
 })
 
+//15. Get the sorted array of users which are ordered by their scores in descending order.
+app.post("/getRank", function (request, response) {
+  console.log("Get the rank list");
+
+  con.query("SELECT * FROM Users ORDER BY score DESC", function (error, result) {
+    if (error) throw error;
+
+    response.send(result);
+  })
+})
+
 //create a table
 function createTable(){
   con.connect(function(err) {
