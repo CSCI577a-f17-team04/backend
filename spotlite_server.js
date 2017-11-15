@@ -368,29 +368,38 @@ app.post("/getRank", function (request, response) {
 //16. send notification to the target user
 app.get("/sendNotification", function (request, response) {
   console.log("send notification to another user");
+  var tokens = [];
+  var count = 0;
 
-  con.query("SELECT * FROM Users WHERE `username` = ?", [request.body.username], function (error, result, field) {
-    if(error){
-      response.send(error);
-      return;
-    }
-    else{
-      var registrationToken = result[0].firebaseToken;
+  for(var i = 0; i < request.body.username.length; i++){
+    addToNotificaitonGroup(request.body.username)
+  }
 
-      var group = "TestGroup";
-      var content = request.body.description;
+  var addToNotificaitonGroup =  function (username) {
+    con.query("SELECT * FROM Users WHERE `username` = ?", [username], function (error, result, field) {
+      if(error){
+        response.send(error);
+        return;
+      }
+      else{
+        var registrationToken = result[0].firebaseToken;
 
-      firebase.sendSingleMessage(registrationToken,content);
-      // firebase.addUserToGroup("dT0fq7xl9sY:APA91bGj7Q-bWRw80tx_-wCd6Dvwfw5SmDdsbi6qVffoIDvyZZHnjA292mc4nWhD8rU6oU6P7w4zdMwgl97Lt_Sco7mTbUKiVPafF5GUt9PcxY_9gLfEc2jiUkxRA-0lA0ZP_o17JNxw",group);
-      // firebase.addUserToGroup("ebV1KBaNqfc:APA91bFYLB0r3YStmIU4uMToOCW-sXmJuSIMr2DT6tRuyCjwE340GnAm_7v-T_gPHxDdmZ57Zr0bID-zeqSJ2wmuMquQduqt11DVXUcMAgs63ZfhRb36L-1rwOv2orpshyeS2krgn-tU",group);
-      // firebase.addUserToGroup("dVDGW1dLhMY:APA91bGRNlSV_5E4MLtu9Ia9PjzmAY-6_Z4MM6xKVRVFJpiE-Adm-bpkTiNq5MFA3EBHMuRyfTOYNIXQSKsZLSpzeN8oajvsHBR52AsYoeBuHpGFI5n_WIB1u7ZjVsICT8IBG9WGj19d",group);
-      // firebase.removeUserToGroup(registrationToken,topic);
-      // firebase.sendGroupMessage(group,content);
+        // var group = "NotificationGroup";
+        var content = request.body.description;
 
-      response.send(["true"]);
-    }
+        firebase.sendSingleMessage(registrationToken,content);
+        // firebase.addUserToGroup("dT0fq7xl9sY:APA91bGj7Q-bWRw80tx_-wCd6Dvwfw5SmDdsbi6qVffoIDvyZZHnjA292mc4nWhD8rU6oU6P7w4zdMwgl97Lt_Sco7mTbUKiVPafF5GUt9PcxY_9gLfEc2jiUkxRA-0lA0ZP_o17JNxw",group);
+        // firebase.addUserToGroup("ebV1KBaNqfc:APA91bFYLB0r3YStmIU4uMToOCW-sXmJuSIMr2DT6tRuyCjwE340GnAm_7v-T_gPHxDdmZ57Zr0bID-zeqSJ2wmuMquQduqt11DVXUcMAgs63ZfhRb36L-1rwOv2orpshyeS2krgn-tU",group);
+        // firebase.addUserToGroup("dVDGW1dLhMY:APA91bGRNlSV_5E4MLtu9Ia9PjzmAY-6_Z4MM6xKVRVFJpiE-Adm-bpkTiNq5MFA3EBHMuRyfTOYNIXQSKsZLSpzeN8oajvsHBR52AsYoeBuHpGFI5n_WIB1u7ZjVsICT8IBG9WGj19d",group);
+        // firebase.removeUserToGroup(registrationToken,topic);
+        // firebase.sendGroupMessage(group,content);
+      }
 
-  });
+      if(count == request.body.username.length)
+        response.send(["true"]);
+
+    });
+  }
 });
 
 app.post("/reset", function(request, response) {
