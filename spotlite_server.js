@@ -365,15 +365,11 @@ app.post("/getRank", function (request, response) {
   })
 });
 
-//16. send notification to the target user
-app.get("/sendNotification", function (request, response) {
-  console.log("send notification to another user");
-  var tokens = [];
-  var count = 0;
+//16. send notification to users
+app.post("/sendNotification", function (request, response) {
+  console.log("send notification to other users");
 
-  for(var i = 0; i < request.body.username.length; i++){
-    addToNotificaitonGroup(request.body.username)
-  }
+  var count = 0;
 
   var addToNotificaitonGroup =  function (username) {
     con.query("SELECT * FROM Users WHERE `username` = ?", [username], function (error, result, field) {
@@ -384,7 +380,7 @@ app.get("/sendNotification", function (request, response) {
       else{
         var registrationToken = result[0].firebaseToken;
 
-        // var group = "NotificationGroup";
+        var group = "NotificationGroup";
         var content = request.body.description;
 
         firebase.sendSingleMessage(registrationToken,content);
@@ -400,12 +396,32 @@ app.get("/sendNotification", function (request, response) {
 
     });
   }
+
+  for(var i = 0; i < request.body.username.length; i++){
+    addToNotificaitonGroup(request.body.username[i]);
+  }
+
+
 });
 
-app.post("/reset", function(request, response) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.get("/reset", function(request, response) {
   console.log("reset");
 
-  con.query("UPDATE Challenger SET isMatched = true WHERE challengee = ?", ["test2"], function (err, result) {
+  con.query("UPDATE Challenger SET isMatched = false WHERE challengee = ?", ["test2"], function (err, result) {
     if(err){
       response.send(err);
       return;
