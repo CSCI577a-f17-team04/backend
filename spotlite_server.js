@@ -277,6 +277,34 @@ app.post("/challengedPhone", function (request, response) {
   response.send(["true"]);
 });
 
+//10.5 Challenge others
+app.post("/challengeOthers", function (request, response) {
+  console.log("Challenge others");
+  var challengees = request.body.challengees;
+  var phones = request.body.phones;
+
+  for (var i = 0; i < phones.length; i++){
+    var myobj = {username : request.body.username, phone: phones[i], date: request.body.date};
+    con.query("INSERT INTO ChallengedPhone SET ?", myobj, function(err, res, field) {
+      if (err) {
+        response.send("you have error");
+        return;
+      }
+      console.log("Insert 1 element correctly");
+    });
+    myobj = {isMatched: false, challenger: request.body.username, challengee: challengees[i], date: request.body.date};
+    con.query("INSERT INTO Challenger SET ?", myobj, function (err, res, field) {
+      if(err){
+        response.send(err);
+        return;
+      };
+      console.log("Add one more challenger Pair");
+    });
+  }
+  
+  response.send(["true"]);
+});
+
 //11. Check whether the user is matched or not before rendering the challenge screen
 app.post("/isMatched", function (request, response) {
   console.log("Judge the given user status");
@@ -310,7 +338,7 @@ app.post("/getImage", function (request, response) {
   con.query("SELECT * FROM Posts WHERE username = ? AND date = ? AND isChallenge = true", [request.body.username, request.body.date], function (error, result, field) {
 
     if (error) {
-      response.send("you have error");
+      response.send(error);
       return;
     }
 
