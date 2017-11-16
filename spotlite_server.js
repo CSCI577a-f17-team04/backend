@@ -58,6 +58,7 @@ app.post("/competitorCandidates", function (request, response) {
       response.send("you have error");
       return;
     }
+    
     if(result.length == 0){
       console.log("this is null");
       response.send(result);
@@ -277,7 +278,7 @@ app.post("/challengedPhone", function (request, response) {
   response.send(["true"]);
 });
 
-//10.5 Challenge others
+//11 Challenge others
 app.post("/challengeOthers", function (request, response) {
   console.log("Challenge others");
   var challengees = request.body.challengees;
@@ -301,11 +302,11 @@ app.post("/challengeOthers", function (request, response) {
       console.log("Add one more challenger Pair");
     });
   }
-  
+
   response.send(["true"]);
 });
 
-//11. Check whether the user is matched or not before rendering the challenge screen
+//12. Check whether the user is matched or not before rendering the challenge screen
 app.post("/isMatched", function (request, response) {
   console.log("Judge the given user status");
   con.query("SELECT * FROM Challenger WHERE (Challengee = ? OR Challenger = ?) AND isMatched = true AND date = ?", [request.body.username, request.body.username, request.body.date], function (error, result, field) {
@@ -332,7 +333,7 @@ app.post("/isMatched", function (request, response) {
   });
 });
 
-//12. Get the challenged-related image/video that the given user sent
+//13. Get the challenged-related image/video that the given user sent
 app.post("/getImage", function (request, response) {
   console.log("Get the user's post");
   con.query("SELECT * FROM Posts WHERE username = ? AND date = ? AND isChallenge = true", [request.body.username, request.body.date], function (error, result, field) {
@@ -347,7 +348,7 @@ app.post("/getImage", function (request, response) {
   });
 });
 
-//13. Get the challenged-related image/video that the given user sent
+//14. Get the challenged-related image/video that the given user sent
 app.post("/verify", function (request, response) {
   console.log("Verify the user's post ");
   var myObj = {username : request.body.username, date : request.body.date, isApproved : request.body.isApproved};
@@ -362,7 +363,7 @@ app.post("/verify", function (request, response) {
   });
 });
 
-//14. Get the number of phone numbers the given user has challenged
+//15. Get the number of phone numbers the given user has challenged
 app.post("/inviteNumber", function (request, response) {
   console.log("Get the No. of phone No.s the user challenged");
   var username = request.body.username;
@@ -379,7 +380,7 @@ app.post("/inviteNumber", function (request, response) {
   });
 });
 
-//15. Get the sorted array of users which are ordered by their scores in descending order.
+//16. Get the sorted array of users which are ordered by their scores in descending order.
 app.post("/getRank", function (request, response) {
   console.log("Get the rank list");
 
@@ -393,7 +394,7 @@ app.post("/getRank", function (request, response) {
   })
 });
 
-//16. send notification to users
+//17. send notification to users
 app.post("/sendNotification", function (request, response) {
   console.log("send notification to other users");
 
@@ -406,6 +407,7 @@ app.post("/sendNotification", function (request, response) {
         return;
       }
       else{
+        console.log(result[0]);
         var registrationToken = result[0].firebaseToken;
 
         var group = "NotificationGroup";
