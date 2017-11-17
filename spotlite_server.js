@@ -58,7 +58,7 @@ app.post("/competitorCandidates", function (request, response) {
       response.send("you have error");
       return;
     }
-    
+
     if(result.length == 0){
       console.log("this is null");
       response.send(result);
@@ -251,12 +251,16 @@ app.post("/submitIdea", function (request, response) {
 //9. add post
 app.post("/addPost", function (request, response) {
   console.log("add post");
+
+  console.log(request.body.img);
   var myobj = {username : request.body.username, img: request.body.img, date: request.body.date, isChallenge: request.body.isChallenge, time : request.body.time};
   con.query("Insert Into Posts SET ?", myobj, function (err, result, field) {
     if (err) {
       response.send("you have error");
       return;
     }
+
+    console.log("---");
     response.send(["true"]);
   });
 });
@@ -336,7 +340,7 @@ app.post("/isMatched", function (request, response) {
 //13. Get the challenged-related image/video that the given user sent
 app.post("/getImage", function (request, response) {
   console.log("Get the user's post");
-  con.query("SELECT * FROM Posts WHERE username = ? AND date = ? AND isChallenge = true", [request.body.username, request.body.date], function (error, result, field) {
+  con.query("SELECT * FROM Posts WHERE username = ? AND date = ? AND isChallenge = ?", [request.body.username, request.body.date, "true"], function (error, result, field) {
 
     if (error) {
       response.send(error);
