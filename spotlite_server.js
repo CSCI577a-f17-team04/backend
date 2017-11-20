@@ -224,7 +224,7 @@ app.post("/getUpcomingChallenges", function (request, response) {
 //7. Check whether this user is approved for today's challenge
 app.post("/approved", function (request, response) {
   console.log("check approve");
-  var myobj = {date: response.body.date, username: request.body.username};
+  var myobj = {date: request.body.date, username: request.body.username};
   con.query("SELECT * FROM Approved WHERE date = ? AND username = ?", [request.body.date, request.body.username], function (err, result, field) {
     if (err) {
       response.send("you have error");
