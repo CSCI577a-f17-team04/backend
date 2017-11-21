@@ -2,7 +2,7 @@ var mysql = require('mysql');
 
 var app, express;
 
-//establish a server
+//establish a server, use "express" framework
 express = require("express");
 var Firebase = require('./challengeNotification')
 var firebase = new Firebase();
