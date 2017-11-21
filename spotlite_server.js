@@ -7,7 +7,7 @@ express = require("express");
 var Firebase = require('./challengeNotification')
 var firebase = new Firebase();
 
-app = express(); 
+app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
