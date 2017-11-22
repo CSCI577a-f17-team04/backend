@@ -65,6 +65,12 @@ CREATE TABLE `SpotLite`.`Suggestions` (
   PRIMARY KEY (`suggestionId`));
 
 
+CREATE TABLE `SpotLite`.`Scores` (
+  `username` VARCHAR(255) NOT NULL,
+  `date` VARCHAR(255) NOT NULL,
+  `score` INT NOT NULL,
+  PRIMARY KEY (`username`, `date`));
+
 INSERT INTO Users (username, password, nickname, email, phone, score) VALUE ("test3", "passwd", "HelloWorld", "abc@usc.edu", "2137161111", 0);
 INSERT INTO Users (username, password, nickname, email, phone, score) VALUE ("test4", "passwd", "Vili", "abc@usc.edu", "2137161111", 0);
 INSERT INTO Users (username, password, nickname, email, phone, score) VALUE ("test5", "passwd", "Lin", "abc@usc.edu", "2137161111", 0);

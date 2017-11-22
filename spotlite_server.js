@@ -388,7 +388,7 @@ app.post("/inviteNumber", function (request, response) {
 app.post("/getRank", function (request, response) {
   console.log("Get the rank list");
 
-  con.query("SELECT * FROM Users ORDER BY score DESC", function (error, result) {
+  con.query("SELECT * FROM Scores WHERE date = ? ORDER BY score DESC", [request.date], function (error, result) {
     if (error) {
       response.send("you have error");
       return;
@@ -434,8 +434,27 @@ app.post("/sendNotification", function (request, response) {
   for(var i = 0; i < request.body.username.length; i++){
     addToNotificaitonGroup(request.body.username[i]);
   }
+});
 
+//18. update the given user's today score
+app.post("/updateScore", function (request, response) {
+  console.log("update user's today score");
 
+  con.query("SELECT * FROM Scores WHERE (username = ? AND date = ?)", [request.username, request.date], function (error, result) {
+    if(error){
+      response.send(error);
+      return;
+    }
+
+    con.query("UPDATE Scores SET score = ? WHERE username = ?", [result[0].score + request.score, request.username], function (err, result) {
+      if(err){
+        response.send(err);
+        return;
+      };
+
+      response.send(["true"]);
+    })
+  });
 });
 
 
@@ -445,12 +464,28 @@ app.post("/sendNotification", function (request, response) {
 
 
 
+app.get("/newDayUpdate", function (request, response) {
+  console.log("Welcome to a new day!");
 
+  con.query("SELECT * FROM Users", function (err, result) {
+    if(err){
+      response.send(err);
+      return;
+    };
 
-
-
-
-
+    for(var i = 0; i < result.length; i++){
+      var today = new Date();
+      var myObj = {
+        username: result[i].username,
+        nickname: result[i].nickname,
+        date: (today.getMonth() + 1) + "-" + (today.getDate()) + "-" + (today.getFullYear()),
+        score: 0
+      };
+      con.query("INSERT IGNORE INTO Scores SET ?", myObj);
+    };
+    response.send(["true"]);
+  });
+});
 
 app.get("/reset", function(request, response) {
   console.log("reset");
