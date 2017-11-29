@@ -20,7 +20,7 @@ CREATE TABLE `SpotLite`.`Challenger` (
   PRIMARY KEY (`matchId`));
 
 
-CREATE TABLE `SpotLite`.`Approved` (
+CREATE TABLE `SpotLite`.`Verified` (
   `isApproved` TINYINT(1) NULL,
   `username` VARCHAR(255) NULL,
   `approvedId` INT NOT NULL AUTO_INCREMENT,
@@ -38,12 +38,10 @@ CREATE TABLE `SpotLite`.`Challenge` (
 
 
 CREATE TABLE `SpotLite`.`ChallengedPhone` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(255) NULL,
-  `phone` VARCHAR(255) NULL,
-  `date` VARCHAR(255) NULL,
-  `imgURL` VARCHAR(255) NULL,
-  PRIMARY KEY (`id`));
+  `username` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(255) NOT NULL,
+  `date` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`phone`, `date`));
 
 
 CREATE TABLE `SpotLite`.`Posts` (
@@ -52,7 +50,8 @@ CREATE TABLE `SpotLite`.`Posts` (
   `isChallenge` VARCHAR(255) NULL,
   `date` VARCHAR(255) NULL,
   `time` VARCHAR(255) NULL,
-  `img` VARCHAR(45) NULL,
+  `img` BLOB NOT NULL,
+  `imgURL` VARCHAR(255) NULL,
   PRIMARY KEY (`postId`));
 
 
